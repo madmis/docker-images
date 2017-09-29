@@ -29,6 +29,7 @@ RUN rm -rf /var/lib/apt/lists/* \
 
 RUN docker-php-ext-install bcmath
 RUN docker-php-ext-install ctype
+RUN docker-php-ext-install exif
 RUN docker-php-ext-install dom
 RUN docker-php-ext-install gettext
 RUN docker-php-ext-install json

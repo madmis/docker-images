@@ -27,6 +27,7 @@ RUN rm -rf /var/lib/apt/lists/* \
 	&& docker-php-ext-install \
 	    bcmath \
 	    ctype \
+	    exif \
 	    dom \
 	    gettext \
 	    json \
