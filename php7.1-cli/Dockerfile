@@ -39,6 +39,7 @@ RUN docker-php-ext-install mcrypt
 RUN docker-php-ext-install mbstring
 RUN docker-php-ext-install pdo
 RUN docker-php-ext-install pgsql
+RUN docker-php-ext-install pdo_mysql
 RUN docker-php-ext-install pdo_pgsql
 RUN docker-php-ext-install pdo_sqlite
 RUN docker-php-ext-install sockets

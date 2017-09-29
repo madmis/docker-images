@@ -36,6 +36,7 @@ RUN rm -rf /var/lib/apt/lists/* \
 	    mcrypt \
 	    mbstring \
 	    pdo \
+	    pdo_mysql \
 	    pdo_pgsql \
 	    pgsql \
         sockets \
