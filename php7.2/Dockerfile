@@ -19,26 +19,29 @@ RUN apt-get update && apt-get install -y \
     libmcrypt-dev \
     supervisor \
     libxml2-dev \
-    libsqlite3-dev
+    sqlite3 \
+    libsqlite3-dev \
+    libsqlite3-0
 
 RUN apt-get update && apt-get install -y vim
 
 RUN rm -rf /var/lib/apt/lists/* \
 	&& docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
 	&& docker-php-ext-install \
-	    bcmath \
-	    ctype \
-	    opcache \
-	    exif \
-	    dom \
-	    gettext \
-	    json \
-	    gd \
-	    mbstring \
-	    pdo \
-	    pdo_mysql \
-	    pdo_pgsql \
-	    pgsql \
+        bcmath \
+        ctype \
+        opcache \
+        exif \
+        dom \
+        gettext \
+        json \
+        gd \
+        mbstring \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        pgsql \
+        pdo_sqlite \
         sockets \
         intl \
         simplexml \
@@ -53,26 +56,6 @@ RUN composer config -g github-oauth.github.com 544e09ee996cdf60ece3804abc52599c2
 
 RUN export PATH="~/.composer/vendor/bin/:$PATH"
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-RUN git clone git://github.com/xdebug/xdebug.git /tmp/xdebug \
-    && cd /tmp/xdebug \
-    && pwd && ls -la && ./rebuild.sh \
-    && /usr/local/bin/phpize \
-    && ./configure --enable-xdebug \
-    && make \
-    && make install
-
-#RUN pecl install xdebug \
-RUN docker-php-ext-enable xdebug \
-    && echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_connect_back=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_handler=dbgp" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
-
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 RUN usermod -a -G root www-data
