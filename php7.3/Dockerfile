@@ -5,12 +5,21 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN TERM=xterm
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends locales tzdata \
+    && locale-gen en_US.UTF-8
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    software-properties-common \
     cron \
     rsyslog \
     wget \
     git \
+    curl \
     python \
+    gettext \
+    libfreetype6-dev \
     libpq-dev \
     libzip-dev \
     libicu-dev \
@@ -22,10 +31,15 @@ RUN apt-get update && apt-get install -y \
     sqlite3 \
     libsqlite3-dev \
     libsqlite3-0 \
+    zip \
+    unzip \
     vim
 
-RUN rm -rf /var/lib/apt/lists/* \
-	&& docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
+RUN ln -sf /dev/stderr /var/log/php-fpm.log \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/*
+
+RUN docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr \
 	&& docker-php-ext-install \
         bcmath \
         ctype \
@@ -47,24 +61,31 @@ RUN rm -rf /var/lib/apt/lists/* \
         xml \
         zip
 
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+RUN pecl install redis \
+    &&  rm -rf /tmp/pear \
+    &&  docker-php-ext-enable redis
 
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-RUN php -r "readfile('https://getcomposer.org/installer');" | php && chmod +x composer.phar && mv composer.phar /usr/local/bin/composer
-RUN composer config -g github-oauth.github.com 48e3236262b34d30969dca3c37281b3b4bbe3221bda826ac6a9a62d6444cdb0dcd0615698a5cbe587c3f0fe57a54d8f5
+RUN rm /usr/local/etc/php-fpm.d/www.conf
+COPY www.conf /usr/local/etc/php-fpm.d/
 
+RUN echo "opcache.revalidate_freq=0" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    && echo "opcache.validate_timestamps=0 ; (comment this in dev env)" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    && echo "opcache.max_accelerated_files=50000"  >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    && echo "opcache.memory_consumption=1512"  >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    && echo "opcache.interned_strings_buffer=16"  >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    && echo "opcache.fast_shutdown=1"  >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    && echo "opcache.consistency_checks=1"  >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini \
+    && echo "opcache.save_comments=1"  >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
+
+RUN curl -sS https://getcomposer.org/installer | php -- --filename=composer --install-dir=/usr/local/bin
 RUN export PATH="~/.composer/vendor/bin/:$PATH"
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-RUN usermod -a -G root www-data
-RUN usermod -u 1000 www-data
-#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+RUN mkdir -p /var/run/php
 RUN mkdir -p /etc/cron.d/
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY supervisord.conf /etc/supervisord.conf
+ADD entrypoint.sh /usr/local/bin/
 
 WORKDIR /var/www
 
-RUN chown -R www-data:www-data /var/www
-
+CMD ["entrypoint.sh"]
