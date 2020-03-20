@@ -1,0 +1,20 @@
+version: "3"
+services:
+
+  card.php:
+    build:
+      context: ./
+    image: php7.4:latest
+    container_name: php7.4
+    env_file:
+      - .env
+    environment:
+      COLUMNS: "`tput cols`"
+      LINES: "`tput lines`"
+      XDEBUG_CONFIG: remote_host=${HOST_IP}
+      PHP_IDE_CONFIG: serverName=${PHPSTORM_SERVER_NAME}
+      UID_VAR: {{ UID_VALUE }}
+      GID_VAR: {{ GID_VALUE }}
+    expose:
+      - "9000"
+
