@@ -13,6 +13,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         software-properties-common \
         gettext \
+        libgmp-dev \
         libonig-dev \
         libfreetype6-dev \
         libmcrypt-dev \
@@ -45,6 +46,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         dom \
         exif \
         gd \
+        gmp \
         gettext \
         intl \
         mbstring \
