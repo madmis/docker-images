@@ -1,0 +1,20 @@
+version: "3"
+services:
+
+    app.php:
+        build:
+            context: ./
+        image: php8.3:latest
+        container_name: php8.3
+        env_file:
+            - .env
+        environment:
+            COLUMNS: "`tput cols`"
+            LINES: "`tput lines`"
+            XDEBUG_MODE: ${XDEBUG_MODE}
+            XDEBUG_CONFIG: client_host=${LOOPBACK_IP}
+            PHP_IDE_CONFIG: serverName=${PHPSTORM_SERVER_NAME}
+            UID_VAR: {{ UID_VALUE }}
+            GID_VAR: {{ GID_VALUE }}
+        expose:
+            - "9000"
