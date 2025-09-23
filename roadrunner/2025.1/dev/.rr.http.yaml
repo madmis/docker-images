@@ -1,0 +1,15 @@
+version: '3'
+rpc:
+    listen: tcp://127.0.0.1:6001
+server:
+    env:
+        APP_ENV: dev
+        APP_DEBUG: "1"
+        APP_RUNTIME: "Runtime\\RoadRunnerSymfonyNyholm\\Runtime"
+    command: "php ../../public/index.php"
+http:
+    address: "0.0.0.0:8080"
+    pool:
+        num_workers: 1
+logs:
+    level: debug

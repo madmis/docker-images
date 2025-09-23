@@ -1,0 +1,81 @@
+# @formatter:off
+services:
+    example.base_app:
+        build:
+            context: ./php
+            dockerfile: Dockerfile
+        image: example.base.app:dev
+        container_name: example.base.app
+        environment:
+            PS1: '\[\033[36m\]\u\[\033[m\]@\[\033[95;1m\]$$(hostname):\[\033[34m\]\w\[\033[m\]\$ '
+            COLUMNS: "`tput cols`"
+            LINES: "`tput lines`"
+            XDEBUG_MODE: ${XDEBUG_MODE}
+            XDEBUG_CONFIG: client_host=${LOOPBACK_IP}
+            PHP_IDE_CONFIG: serverName=${PHPSTORM_SERVER_NAME}
+            UID_VAR: {{ UID_VALUE }}
+            GID_VAR: {{ GID_VALUE }}
+        volumes:
+            - ../../:/app:rw
+        env_file:
+            - .env
+        networks:
+            - dev_network
+
+    example.web:
+        extends:
+            service: example.base_app
+        command: ['entrypoint.sh']
+        image: example.web.app:dev
+        container_name: example.web.app
+        hostname: example.web.app
+        expose:
+            - "9000"
+        ports:
+            - '${HOST_HTTP_PORT}:8080/tcp'
+            - '${HOST_HTTPS_PORT}:8443/tcp'
+        env_file:
+            - .env
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+
+    example.db:
+        build:
+            context: ./db/
+            dockerfile: Dockerfile
+        image: example.db:dev
+        container_name: example.db
+        hostname: example.db
+        env_file:
+            - .env
+        environment:
+            PS1: '\[\033[36m\]\u\[\033[m\]@\[\033[95;1m\]$$(hostname):\[\033[34m\]\w\[\033[m\]\$ '
+            COLUMNS: "`tput cols`"
+            LINES: "`tput lines`"
+            PGDATA: /pgdata
+            POSTGRES_DB: ${COMMAND_DATABASE_NAME}
+            POSTGRES_USER: ${COMMAND_DATABASE_USER}
+            POSTGRES_PASSWORD: ${COMMAND_DATABASE_PASSWORD}
+            POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+            - "${HOST_DATABASE_PORT}:${COMMAND_DATABASE_PORT}"
+        networks:
+            - dev_network
+        volumes:
+            - ./var/db_data:/pgdata
+
+    example.redis:
+        build:
+            context: ./redis/
+        image: example.redis:dev
+        container_name: example.redis
+        env_file:
+            - .env
+        ports:
+            - "${HOST_REDIS_PORT}:6379"
+        networks:
+            - dev_network
+
+networks:
+    dev_network:
+        driver: bridge
